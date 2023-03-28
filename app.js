@@ -27,10 +27,21 @@ const initializeDBAndServer = async () => {
 
 initializeDBAndServer();
 
+const convertDbObjectToResponseObject = (dbObject) => {
+  return {
+    playerId: dbObject.player_id,
+    playerName: dbObject.player_name,
+    jerseyNumber: dbObject.jersey_number,
+    role: dbObject.role,
+  };
+};
+
 app.get("/players/", async (req, res) => {
   query = `select * from cricket_team;`;
   const players = await db.all(query);
-  res.send(players);
+  res.send(
+    players.map((eachPlayer) => convertDbObjectToResponseObject(eachPlayer))
+  );
 });
 
 app.post("/players/", async (req, res) => {
@@ -49,7 +60,7 @@ app.get("/players/:playerId/", async (req, res) => {
   const { playerId } = req.params;
   query = `select * from cricket_team where player_id=${playerId};`;
   const player = await db.get(query);
-  res.send(player);
+  res.send(convertDbObjectToResponseObject(player));
 });
 
 app.delete("/players/:playerId/", async (req, res) => {
@@ -57,6 +68,14 @@ app.delete("/players/:playerId/", async (req, res) => {
   query = `delete  from cricket_team where player_id=${playerId};`;
   const player = await db.run(query);
   res.send("Player Removed");
+});
+
+app.put("/players/:playerId/", async (req, res) => {
+  const { playerId } = req.params;
+  const { playerName, jerseyNumber, role } = req.body;
+  query = `update cricket_team set player_name='${playerName}',jersey_number=${jerseyNumber},role='${role}' where player_id=${playerId};`;
+  await db.run(query);
+  res.send("Player Details Updated");
 });
 
 module.exports = app;
