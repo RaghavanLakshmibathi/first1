@@ -37,10 +37,26 @@ app.post("/players/", async (req, res) => {
   const { playerName, jerseyNumber, role } = req.body;
   query = `insert into cricket_team(player_name,jersey_number,role) values(
            '${playerName}',
-           ${jerseyNumber},
+           '${jerseyNumber}',
            '${role}'
            );`;
   const update = await db.run(query);
   const playerId = update.lastID;
   res.send("Player Added to Team");
 });
+
+app.get("/players/:playerId/", async (req, res) => {
+  const { playerId } = req.params;
+  query = `select * from cricket_team where player_id=${playerId};`;
+  const player = await db.get(query);
+  res.send(player);
+});
+
+app.delete("/players/:playerId/", async (req, res) => {
+  const { playerId } = req.params;
+  query = `delete  from cricket_team where player_id=${playerId};`;
+  const player = await db.run(query);
+  res.send("Player Removed");
+});
+
+module.exports = app;
